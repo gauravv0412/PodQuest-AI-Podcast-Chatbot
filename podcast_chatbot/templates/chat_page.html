@@ -1,0 +1,117 @@
+{% extends 'layouts/base.html' %}
+{% block head %}
+<style>
+    body {
+        background-image: url('/media/bg.webp');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        background-blend-mode: overlay;
+    }
+
+    .chat-container {
+        background-color: rgba(43, 6, 6, 0.8);
+        /* Making chat container slightly opaque */
+        border-radius: 10px;
+        /* Rounded corners for the chat container */
+    }
+
+    .message {
+        margin-bottom: 15px;
+        /* Adds space between messages */
+    }
+
+    .spinner-border {
+        width: 1.1rem;
+        /* Smaller spinner */
+        height: 1.1rem;
+        vertical-align: middle;
+    }
+
+    #chat-input:focus {
+        outline: 2px solid darkgray !important;
+        /* Sets the outline color to gray */
+    }
+</style>
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="chat-container p-3">
+        <div id="chat-box" class="mb-3 p-3" style="height: 400px; overflow-y: auto;"></div>
+        <div class="input-group">
+            <input type="text" id="chat-input" class="form-control" placeholder="Ask something..."
+                onkeydown="handleEnter(event)">
+            <button class="btn btn-secondary" onclick="sendMessage()" id="send-button">Send</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function handleEnter(event) {
+        if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+            sendMessage();
+        }
+    }
+
+    function sendMessage() {
+        const input = document.getElementById('chat-input');
+        const message = input.value.trim();
+        if (message === '') {
+            return; // Don't send empty messages
+        }
+        input.value = '';  // Clear the input after sending
+        displayMessage(message, '{{ user.first_name }}');
+        displaySpinner('PodQuest'); // Show spinner with label
+        fetch('{% url "process_query" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ message: message, podcast_id: '{{ podcast_id }}' })
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                updateLastMessage(data.reply); // Replace spinner with actual message
+            })
+            .catch(error => {
+                console.error('There has been a problem with your fetch operation:', error);
+                updateLastMessage('Failed to fetch response'); // Error message if fetch fails
+            });
+    }
+
+    function displayMessage(message, sender) {
+        const chatBox = document.getElementById('chat-box');
+        const msgElem = document.createElement('div');
+        msgElem.className = 'message text-start';
+        msgElem.textContent = sender + ': ' + message;
+        chatBox.appendChild(msgElem);
+        chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the bottom
+    }
+
+    function displaySpinner(sender) {
+        const chatBox = document.getElementById('chat-box');
+        const msgElem = document.createElement('div');
+        msgElem.className = 'message text-start';
+        msgElem.innerHTML = `${sender}: <div class="spinner-border text-secondary" role="status"><span class="visually-hidden">Loading...</span></div>`;
+        msgElem.id = 'loading-message';
+        chatBox.appendChild(msgElem);
+        chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the bottom
+    }
+
+    function updateLastMessage(text) {
+        const loadingMessage = document.getElementById('loading-message');
+        if (loadingMessage) {
+            loadingMessage.textContent = 'PodQuest: ' + text; // Replace spinner with text
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends 'layouts/base.html' %}
+
+{% block head %}
+<style>
+    body {
+        background-image: url('/media/bg.webp');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        background-blend-mode: overlay;
+    }
+</style>
+{% endblock %}
+
+{% block title %}Home - Podcast ChatBot{% endblock %}
+
+{% block content %}
+<h1 class="display-4 text-center my-4">Welcome to PodQuest!</h1>
+<h1 class="display-6 text-center my-4">Unleashing the Power of Podcasts with Advanced AI-Driven Querying Technology!
+</h1>
+<p class="lead text-center mb-4">An advanced AI chatbot that turns podcast listening into an interactive experience.
+    This chatbot leverages the latest in AI technology to transcribe podcasts, understand the content, and engage with
+    you in a conversation about it. You can ask it anything about the podcast—details, explanations, or summaries—and
+    get instant, intelligent responses. It is designed for anyone who wants to quickly grasp complex topics without
+    needing to sift through hours of audio, making learning from podcasts as easy as having a chat.</p>
+
+<div class="row justify-content-center mb-4">
+    <div class="col-md-6">
+        <form action="{% url 'submit_podcast' %}" method="post" class="card card-body">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="podcast_title" class="form-label">Podcast Name</label>
+                <input type="text" class="form-control" id="podcast_title" name="podcast_title"
+                    placeholder="Enter podcast Name">
+            </div>
+            <div class="mb-3">
+                <label for="podcast_url" class="form-label">Podcast URL</label>
+                <input type="url" class="form-control" id="podcast_url" name="podcast_url"
+                    placeholder="Enter podcast URL">
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} mt-2">{{ message }}</div>
+            {% endfor %}
+            {% endif %}
+        </form>
+    </div>
+</div>
+<div class="b-example-divider" id="Features">
+    <hr>
+    <h1 class="display-6 text-center my-4">Features of PodQuest!<a class="anchor-link" href="#Features"
+            aria-label="Link to this section: Features"></a>
+</div>
+
+<div class="row row-cols-1 row-cols-md-2 g-4">
+    <div class="col">
+        <div class="card">
+            <img src="/media/llm2.jpg" class="card-img-top" alt="LLM Image" style="height: 20rem;">
+            <div class="card-body">
+                <h5 class="card-title">Large Language Models (LLM)</h5>
+                <p class="card-text">Power Your Conversations with AI: Dive deep into the essence of dialogue and
+                    content creation. Our LLMs are the backbone of the platform, adept at parsing and understanding
+                    complex podcast discussions to deliver engaging, context-rich summaries and interactions.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card">
+            <img src="/media/rag.jpg" class="card-img-top" alt="RAG Image" style="height: 20rem;">
+            <div class="card-body">
+                <h5 class="card-title">Retrieval-Augmented Generation (RAG)</h5>
+                <p class="card-text">Smart, Contextual Information Retrieval: Elevate the accuracy and depth of
+                    responses with RAG. By dynamically pulling relevant facts and data, our system ensures every output
+                    is not only relevant but meticulously tailored to provide the most value.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card">
+            <img src="/media/whisper.jpg" class="card-img-top" alt="Whisper Image" style="height: 20rem;">
+            <div class="card-body">
+                <h5 class="card-title">Whisper</h5>
+                <p class="card-text">Seamless Transcription at Your Fingertips: Transform audio into actionable
+                    insights. Whisper technology captures and converts spoken content from your podcasts into precise
+                    text, ready for further analysis and summarization.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card">
+            <img src="/media/langchain.webp" class="card-img-top" alt="LangChain Image" style="height: 20rem;">
+            <div class="card-body">
+                <h5 class="card-title">LangChain</h5>
+                <p class="card-text">Orchestrate AI with Precision: Linking multiple AI technologies seamlessly,
+                    LangChain orchestrates complex workflows, ensuring smooth data integration and intelligent
+                    application behavior that adapts in real-time to user needs.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

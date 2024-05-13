@@ -1,0 +1,47 @@
+{% extends 'layouts/base.html' %}
+
+{% block head %}
+<style>
+    body {
+        background-image: url('/media/bg.webp');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        background-blend-mode: overlay;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<style>
+    .accordion-button {
+        font-size: 18px; /* Larger font size for questions */
+        font-weight: bold; /* Optional: makes text bold */
+    }
+</style>
+<div class="b-example-divider">
+    <h1 class="display-6 text-left my-4">FAQs</h1>
+    <hr>
+    <div class="accordion" id="accordionPanelsStayOpenExample">
+        {% for k, v in faqs.items %}
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="heading{{ forloop.counter }}">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapse{{ forloop.counter }}" aria-expanded="true"
+                    aria-controls="collapse{{ forloop.counter }}">
+                    {{ k }}
+                </button>
+            </h2>
+            <div id="collapse{{ forloop.counter }}"
+                class="accordion-collapse collapse"
+                aria-labelledby="heading{{ forloop.counter }}" data-parent="#accordionPanelsStayOpenExample">
+                <div class="accordion-body">
+                    {{ v|safe }}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
