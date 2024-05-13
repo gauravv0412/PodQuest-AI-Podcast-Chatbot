@@ -64,7 +64,7 @@
         }
         input.value = '';  // Clear the input after sending
         displayMessage(message, '{{ user.first_name }}');
-        displaySpinner('PodQuest'); // Show spinner with label
+        const spinnerId = displaySpinner('PodQuest'); // Show spinner with label and get its ID
         fetch('{% url "process_query" %}', {
             method: 'POST',
             headers: {
@@ -80,11 +80,11 @@
                 return response.json();
             })
             .then(data => {
-                updateLastMessage(data.reply); // Replace spinner with actual message
+                updateLastMessage(data.reply, spinnerId); // Replace spinner with actual message using spinnerId
             })
             .catch(error => {
                 console.error('There has been a problem with your fetch operation:', error);
-                updateLastMessage('Failed to fetch response'); // Error message if fetch fails
+                updateLastMessage('Failed to fetch response', spinnerId); // Error message if fetch fails, using spinnerId
             });
     }
 
@@ -101,14 +101,16 @@
         const chatBox = document.getElementById('chat-box');
         const msgElem = document.createElement('div');
         msgElem.className = 'message text-start';
+        const spinnerId = 'spinner-' + Date.now(); // Unique ID for each spinner
+        msgElem.id = spinnerId;
         msgElem.innerHTML = `${sender}: <div class="spinner-border text-secondary" role="status"><span class="visually-hidden">Loading...</span></div>`;
-        msgElem.id = 'loading-message';
         chatBox.appendChild(msgElem);
         chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the bottom
+        return spinnerId;
     }
 
-    function updateLastMessage(text) {
-        const loadingMessage = document.getElementById('loading-message');
+    function updateLastMessage(text, spinnerId) {
+        const loadingMessage = document.getElementById(spinnerId);
         if (loadingMessage) {
             loadingMessage.textContent = 'PodQuest: ' + text; // Replace spinner with text
         }
