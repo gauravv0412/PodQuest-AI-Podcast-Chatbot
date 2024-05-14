@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from rest_framework import viewsets
 from .models import Podcast, Transcript, Summary
@@ -10,6 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 import json
 from django.conf import settings
+
 
 # Create your views here.
 
@@ -41,29 +42,32 @@ def FAQs(request):
 def about(request):
     return render(request, 'about.html')
 
+def loading_page(request):
+    task_id = request.GET.get('task_id')
+    podcast_id = request.GET.get('podcast_id')
+    podcast = get_object_or_404(Podcast, id=podcast_id)
+    
+    if podcast.processing_status == 'Completed':
+        return redirect('chat_page', podcast_id=podcast_id)
+
+    # return render(request, 'loading.html', {'podcast_id': podcast_id})
+    return render(request, 'loading.html', {'task_id': task_id, 'podcast_id': podcast_id})
 
 
 
 @login_required
 def submit_podcast(request):
     if request.method == 'POST':
-        print(request.POST)
         title = request.POST['podcast_title']
         url = request.POST['podcast_url']
         if Podcast.objects.filter(owner=request.user, title=title).exists():
             messages.error(request, 'You already have a podcast with this name. Please choose a different name.')
             return render(request, 'index.html')
-        # Create a new podcast entry
         podcast = Podcast.objects.create(owner=request.user, title=title, url=url)
-        # Async task to handle download and transcription
-        try:
-            download_and_transcribe_podcast(podcast.id)
-        except Exception as e:
-            raise e
-            # return render(request, 'index.html', {'error': str(e)})
-        # return redirect('processing', podcast_id=podcast.id)
-        return redirect('/chat_page/' + str(podcast.id))
 
+        # Initiate asynchronous task
+        task_id = download_and_transcribe_podcast.delay(podcast.id).id
+        return redirect('/loading/?task_id=' + str(task_id) + '&podcast_id=' + str(podcast.id))
     else:
         return render(request, 'index.html')
 

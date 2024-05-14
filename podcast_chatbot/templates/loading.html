@@ -1,0 +1,52 @@
+{% extends 'layouts/base.html' %}
+
+{% block head %}
+<style>
+    body {
+        background-image: url('/media/bg.webp');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        background-blend-mode: overlay;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>Processing your podcast...</h1>
+<div class="container mt-5">
+    <div class="text-center">
+        <div id="spinner-container" class="d-inline-flex align-items-left">
+            <span id="status">Downloading Podcast...</span>
+            <div class="spinner-border text-secondary mr-3" role="status">
+                <!-- <span class="sr-only">Loading...</span> -->
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<script>
+    const podcastId = "{{ podcast_id }}";  // Ensure this is rendered correctly
+    const ws = new WebSocket(`ws://${window.location.host}/ws/podcast/${podcastId}/`);
+
+    ws.onmessage = function (event) {
+        console.log('Message received:', event.data);
+        const data = JSON.parse(event.data);
+        document.getElementById('status').textContent = data.message + '...';
+        if (data.message === 'Initialising Langchain... Redirecting') {
+            window.location.href = `/chat_page/${podcastId}`;
+        }
+    };
+
+    ws.onopen = function () {
+        console.log('WebSocket connection established');
+    };
+
+    ws.onerror = function (error) {
+        console.error('WebSocket Error:', error);
+    };
+</script>
+
+{% endblock %}

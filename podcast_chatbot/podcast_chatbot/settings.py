@@ -54,9 +54,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',
     'my_auth',
     'chatbot',
     'widget_tweaks',
+
 ]
 
 MIDDLEWARE = [
@@ -154,3 +156,52 @@ LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = '/auth/login/'
 
 
+ASGI_APPLICATION = 'podcast_chatbot.asgi.application'
+# settings.py
+
+# settings.py
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('localhost', 6379)],
+        },
+    },
+}
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+
+
+
+
+
+# settings.py
+
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'console': {
+#             'class': 'logging.StreamHandler',
+#         },
+#     },
+#     'loggers': {
+#         'django': {
+#             'handlers': ['console'],
+#             'level': 'DEBUG',  # Set this to DEBUG to capture detailed logs
+#             'propagate': True,
+#         },
+#         'channels': {
+#             'handlers': ['console'],
+#             'level': 'DEBUG',  # Set this to DEBUG to capture detailed logs
+#             'propagate': True,
+#         },
+#         'chatbot': {  # Use your app's name here
+#             'handlers': ['console'],
+#             'level': 'DEBUG',  # Set this to DEBUG to capture detailed logs
+#             'propagate': True,
+#         },
+#     },
+# }
