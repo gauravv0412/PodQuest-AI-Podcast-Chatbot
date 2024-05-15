@@ -37,17 +37,6 @@
 </style>
 {% endblock %}
 {% block content %}
-<div class="container">
-    <div class="chat-container p-3">
-        <div id="chat-box" class="mb-3 p-3" style="height: 400px; overflow-y: auto;"></div>
-        <div class="input-group">
-            <input type="text" id="chat-input" class="form-control" placeholder="Ask something..."
-                onkeydown="handleEnter(event)">
-            <button class="btn btn-secondary" onclick="sendMessage()" id="send-button">Send</button>
-        </div>
-    </div>
-</div>
-
 <script>
     function handleEnter(event) {
         if (event.key === "Enter" && !event.shiftKey) {
@@ -116,4 +105,14 @@
         }
     }
 </script>
+<div class="container">
+    <div class="chat-container p-3">
+        <div id="chat-box" class="mb-3 p-3" style="height: 400px; overflow-y: auto;"></div>
+        <div class="input-group">
+            <input type="text" id="chat-input" class="form-control" placeholder="Ask something..."
+                onkeydown="handleEnter(event)">
+            <button class="btn btn-secondary" onclick="sendMessage()" id="send-button">Send</button>
+        </div>
+    </div>
+</div>
 {% endblock %}

@@ -40,9 +40,9 @@ LANGCHAIN_API_KEY = config['api_keys']['LANGCHAIN_API_KEY']
 OPENAI_API_KEY = config['api_keys']['OPENAI_API_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 
 # Application definition
@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'daphne',
     'django.contrib.staticfiles',
     'channels',
     'my_auth',
@@ -99,8 +100,12 @@ WSGI_APPLICATION = 'podcast_chatbot.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config['database']['name'],
+        'USER': config['database']['user'],
+        'PASSWORD': config['database']['password'],
+        'HOST': config['database']['host'],
+        'PORT': config['database']['port'],
     }
 }
 
@@ -147,6 +152,9 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
@@ -205,3 +213,14 @@ CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 #         },
 #     },
 # }
+
+
+# settings.py
+
+# Security settings
+SECURE_SSL_REDIRECT = False  # Set to True when using HTTPS
+SESSION_COOKIE_SECURE = False  # Set to True when using HTTPS
+CSRF_COOKIE_SECURE = False  # Set to True when using HTTPS
+X_FRAME_OPTIONS = 'DENY'
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
