@@ -86,5 +86,5 @@ def get_llm_response(message, rag_llm_chain, session_id):
         config={
             "configurable": {"session_id": session_id}
             },  # constructs a key "abc123" in `store`.
-        )["answer"]
+        )["formatted_answer"]
     return response_text

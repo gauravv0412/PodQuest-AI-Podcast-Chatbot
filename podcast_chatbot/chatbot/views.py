@@ -84,7 +84,26 @@ def chat_page(request, podcast_id):
     rag_llm_chain = initialise_chain(podcast_id)
     llm_chains[session_id] = rag_llm_chain
     logger.error(f"In chat_page initialising chain for podcast_id: {podcast_id} and session_id: {session_id}...")
-    return render(request, 'chat_page.html', {'podcast_id': podcast_id})
+    podcast_title = Podcast.objects.get(id=podcast_id).title
+    if Summary.objects.filter(transcript__podcast__id=podcast_id).exists():
+        podcast_summary = Summary.objects.get(transcript__podcast__id=podcast_id).summary_content
+    else:
+        summary_prompt = "Please provide a brief summary of the podcast."
+        podcast_summary = get_llm_response(summary_prompt, rag_llm_chain, session_id)
+        Summary.objects.create(transcript=Transcript.objects.get(podcast=Podcast.objects.get(id=podcast_id)), summary_content=podcast_summary)
+    greet_message = f"""
+        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+            <p><strong>Welcome to PodQuest!</strong></p>
+            <p>I'm here to assist you with any questions you have about the podcast content.</p>
+            <div style="padding: 10px; border-radius: 8px; margin-top: 10px; border: 1px solid #ddd;">
+                <p><strong>Here's the podcast you uploaded:</strong></p>
+                <p><strong>Title:</strong> {podcast_title}</p>
+                <p><strong>Summary:</strong> {podcast_summary}</p>
+            </div>
+            <p>Feel free to ask me anything about the podcast!</p>
+        </div>
+        """
+    return render(request, 'chat_page.html', {'podcast_id': podcast_id, 'greet_message': greet_message})
 
 @csrf_exempt
 @login_required
@@ -102,8 +121,8 @@ def process_query(request):
         llm_chains[session_id] = rag_llm_chain
     try:
         message = data['message']
-        response_text = get_llm_response(message, rag_llm_chain, session_id)
-        
+        answer = get_llm_response(message, rag_llm_chain, session_id)
+        response_text = f'<div style="padding: 10px; border-radius: 8px; margin-top: 10px; border: 1px solid #ddd;">{answer}</div>'
         return JsonResponse({'reply': response_text})
     except Exception as e:
             logger.error(f'Error processing query: {e}')

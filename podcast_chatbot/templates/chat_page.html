@@ -11,7 +11,7 @@
     }
 
     .chat-container {
-        background-color: rgba(43, 6, 6, 0.8);
+        background-color: rgba(6, 51, 83, 0.8);
         /* Making chat container slightly opaque */
         border-radius: 10px;
         /* Rounded corners for the chat container */
@@ -34,12 +34,16 @@
         /* Sets the outline color to gray */
     }
 </style>
-</style>
 {% endblock %}
 {% block content %}
 <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        scrollToBottom(); // Ensure the chat box scrolls to the bottom on page load
+    });
+
     function handleEnter(event) {
-        if (event.key === "Enter" && !event.shiftKey) {
+        const sendButton = document.getElementById('send-button');
+        if (event.key === "Enter" && !event.shiftKey && !sendButton.disabled) {
             event.preventDefault();
             sendMessage();
         }
@@ -47,6 +51,7 @@
 
     function sendMessage() {
         const input = document.getElementById('chat-input');
+        const sendButton = document.getElementById('send-button');
         const message = input.value.trim();
         if (message === '') {
             return; // Don't send empty messages
@@ -54,6 +59,8 @@
         input.value = '';  // Clear the input after sending
         displayMessage(message, '{{ user.first_name }}');
         const spinnerId = displaySpinner('PodQuest'); // Show spinner with label and get its ID
+        sendButton.disabled = true; // Disable the send button
+
         fetch('{% url "process_query" %}', {
             method: 'POST',
             headers: {
@@ -70,10 +77,12 @@
             })
             .then(data => {
                 updateLastMessage(data.reply, spinnerId); // Replace spinner with actual message using spinnerId
+                sendButton.disabled = false; // Enable the send button
             })
             .catch(error => {
                 console.error('There has been a problem with your fetch operation:', error);
                 updateLastMessage('Failed to fetch response', spinnerId); // Error message if fetch fails, using spinnerId
+                sendButton.disabled = false; // Enable the send button
             });
     }
 
@@ -83,7 +92,7 @@
         msgElem.className = 'message text-start';
         msgElem.textContent = sender + ': ' + message;
         chatBox.appendChild(msgElem);
-        chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the bottom
+        scrollToBottom(); // Scroll to the bottom after adding a new message
     }
 
     function displaySpinner(sender) {
@@ -94,20 +103,30 @@
         msgElem.id = spinnerId;
         msgElem.innerHTML = `${sender}: <div class="spinner-border text-secondary" role="status"><span class="visually-hidden">Loading...</span></div>`;
         chatBox.appendChild(msgElem);
-        chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the bottom
+        scrollToBottom(); // Scroll to the bottom after adding a spinner
         return spinnerId;
     }
 
     function updateLastMessage(text, spinnerId) {
         const loadingMessage = document.getElementById(spinnerId);
         if (loadingMessage) {
-            loadingMessage.textContent = 'PodQuest: ' + text; // Replace spinner with text
+            loadingMessage.innerHTML = 'PodQuest: ' + text; // Replace spinner with text
         }
+        scrollToBottom(); // Scroll to the bottom after updating the message
+    }
+
+    function scrollToBottom() {
+        const chatBox = document.getElementById('chat-box');
+        chatBox.scrollTop = chatBox.scrollHeight;
     }
 </script>
 <div class="container">
     <div class="chat-container p-3">
-        <div id="chat-box" class="mb-3 p-3" style="height: 400px; overflow-y: auto;"></div>
+        <div id="chat-box" class="mb-3 p-3" style="height: 650px; overflow-y: auto;">
+            <div class="message text-start">
+                {{ greet_message|safe }}
+            </div>
+        </div>
         <div class="input-group">
             <input type="text" id="chat-input" class="form-control" placeholder="Ask something..."
                 onkeydown="handleEnter(event)">
