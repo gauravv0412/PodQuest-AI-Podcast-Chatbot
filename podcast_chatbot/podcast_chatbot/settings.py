@@ -40,7 +40,7 @@ LANGCHAIN_API_KEY = config['api_keys']['LANGCHAIN_API_KEY']
 OPENAI_API_KEY = config['api_keys']['OPENAI_API_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
@@ -181,7 +181,7 @@ CHANNEL_LAYERS = {
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 
-
+REDIS_URL = "redis://localhost:6379/0"
 
 
 

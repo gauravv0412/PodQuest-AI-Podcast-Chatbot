@@ -11,6 +11,10 @@ from django.contrib import messages
 import json
 from django.conf import settings
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 # Create your views here.
 
@@ -75,28 +79,35 @@ llm_chains = {}
 
 @login_required
 def chat_page(request, podcast_id):
-    session_id = request.session.session_key
-    rag_llm_chain = initialise_chain(podcast_id, session_id)
+    # session_id = request.session.session_key
+    session_id = request.user.username + '_' + str(podcast_id) + '_session'
+    rag_llm_chain = initialise_chain(podcast_id)
     llm_chains[session_id] = rag_llm_chain
-    print(f"In chat_page initialising chain for podcast_id: {podcast_id} and session_id: {session_id}...")
+    logger.error(f"In chat_page initialising chain for podcast_id: {podcast_id} and session_id: {session_id}...")
     return render(request, 'chat_page.html', {'podcast_id': podcast_id})
 
-import logging
-
-logger = logging.getLogger(__name__)
-
-
 @csrf_exempt
+@login_required
 def process_query(request):
-    session_id = request.session.session_key
-    rag_llm_chain = llm_chains.get(session_id)
-    print(f"In process_query for session_id: {session_id}...")
+    data = json.loads(request.body)
+    podcast_id = data['podcast_id']
+    user = Podcast.objects.get(id=podcast_id).owner
+    session_id = user.username + '_' + str(podcast_id) + '_session'
+    rag_llm_chain = llm_chains.get(session_id, None)
+    if rag_llm_chain is None:
+        logger.error("Initialising chain in process_query..., key not found")
+        logger.error(f'llm_chains.keys: {llm_chains.keys()}')
+        logger.error(f'Our session_id: {session_id}')
+        rag_llm_chain = initialise_chain(podcast_id)
+        llm_chains[session_id] = rag_llm_chain
     try:
-        data = json.loads(request.body)
         message = data['message']
-        # Assuming Elasticsearch retrieval and GPT-3.5 generation here
         response_text = get_llm_response(message, rag_llm_chain, session_id)
         
         return JsonResponse({'reply': response_text})
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+            logger.error(f'Error processing query: {e}')
+            logger.error(f'llm_chains.keys: {llm_chains.keys()}')
+            logger.error(f'Our session_id: {session_id}')
+            return JsonResponse({'error': str(e)}, status=500)
+        # return JsonResponse({'error': str(e)}, status=500)

@@ -6,7 +6,7 @@ import os
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_chroma import Chroma
-from langchain_community.chat_message_histories import ChatMessageHistory
+from langchain_community.chat_message_histories import ChatMessageHistory, RedisChatMessageHistory
 from langchain_community.document_loaders import TextLoader
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -15,6 +15,8 @@ from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_pinecone import PineconeVectorStore
 from django.conf import settings
+import json
+import pickle
 
 os.environ["OPENAI_API_KEY"] = settings.OPENAI_API_KEY
 os.environ["LANGCHAIN_TRACING_V2"] = "true"
@@ -22,7 +24,7 @@ os.environ["LANGCHAIN_API_KEY"] = settings.LANGCHAIN_API_KEY
 os.environ["PINECONE_API_KEY"] = settings.PINECONE_API_KEY
 os.environ["PINECONE_INDEX_NAME"] = "podcasts"
 
-def __initialise_chain(transcript_file, namespace, session_id):
+def __initialise_chain(transcript_file, namespace):
     llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0) 
 
     loader = TextLoader(transcript_file)
@@ -75,17 +77,20 @@ def __initialise_chain(transcript_file, namespace, session_id):
     rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
 
 
-    ### Statefully manage chat history ###
-    store = {}
-    def get_session_history(session_id: str) -> BaseChatMessageHistory:
-        if session_id not in store:
-            store[session_id] = ChatMessageHistory()
-        return store[session_id]
-
+    # ### Statefully manage chat history ###
+    # def get_session_history(session_id: str) -> BaseChatMessageHistory:
+    #     store_file_path = os.path.join(settings.BASE_DIR, 'chatbot/data/chat_history_store.json')
+    #     with open(store_file_path, 'rb') as f:
+    #         store = pickle.load(f)
+    #     if session_id not in store:
+    #         store[session_id] = ChatMessageHistory()
+    #     return store[session_id]
+    def get_message_history(session_id: str) -> RedisChatMessageHistory:
+        return RedisChatMessageHistory(session_id, url=settings.REDIS_URL)
 
     conversational_rag_chain = RunnableWithMessageHistory(
         rag_chain,
-        get_session_history,
+        get_message_history,
         input_messages_key="input",
         history_messages_key="chat_history",
         output_messages_key="answer",

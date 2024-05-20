@@ -17,8 +17,6 @@ def download_audio(video_url, output_path, title):
     yt.streams.filter(only_audio=True).first().download(output_path=output_path)
     return output_path + '/' + title + '.mp4'
 
-import time
-
 import logging
 logger = logging.getLogger(__name__)
 
@@ -72,13 +70,13 @@ def transcribe_and_save_podcast(podcast):
     return
     
 
-def initialise_chain(podcast_id, session_id):
+def initialise_chain(podcast_id):
     podcast = Podcast.objects.get(id=podcast_id)
     transcript_obj = Transcript.objects.get(podcast=podcast)
     transcript_file = os.path.join(settings.MEDIA_ROOT, transcript_obj.file_path.name.lstrip('/'))
     username = podcast.owner.username
     namespace = f"{username}_{podcast_id}"
-    rag_llm_chain = __initialise_chain(transcript_file, namespace, session_id)
+    rag_llm_chain = __initialise_chain(transcript_file, namespace)
     return rag_llm_chain
 
 
