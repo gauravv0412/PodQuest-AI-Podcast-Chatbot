@@ -26,9 +26,7 @@ os.environ["LANGCHAIN_API_KEY"] = settings.LANGCHAIN_API_KEY
 os.environ["PINECONE_API_KEY"] = settings.PINECONE_API_KEY
 os.environ["PINECONE_INDEX_NAME"] = "podcasts"
 
-def __initialise_chain(transcript_file, namespace):
-    llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0) 
-
+def store_vectors_in_pinecone(transcript_file, namespace):
     loader = TextLoader(transcript_file)
     docs = loader.load()
 
@@ -38,6 +36,25 @@ def __initialise_chain(transcript_file, namespace):
     embeddings = OpenAIEmbeddings()
     vectorstore = PineconeVectorStore(index_name="podcasts", embedding=embeddings)
     vectorstore.add_documents(splits, namespace=namespace)
+    return
+
+def delete_namespace_pinecone(namespace):
+    embeddings = OpenAIEmbeddings()
+    vectorstore = PineconeVectorStore(index_name="podcasts", embedding=embeddings)
+    vectorstore.delete(delete_all=True, namespace=namespace)
+
+def __initialise_chain(transcript_file, namespace):
+    llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0) 
+
+    # loader = TextLoader(transcript_file)
+    # docs = loader.load()
+
+    # text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=300)
+    # splits = text_splitter.split_documents(docs)
+    # print(f"Length of splits: {len(splits)}")
+    embeddings = OpenAIEmbeddings()
+    vectorstore = PineconeVectorStore(index_name="podcasts", embedding=embeddings)
+    # vectorstore.add_documents(splits, namespace=namespace)
     retriever = vectorstore.as_retriever(search_kwargs={"namespace": namespace, 'k': 10})
     output_parser = StrOutputParser()
 
@@ -52,15 +69,9 @@ def __initialise_chain(transcript_file, namespace):
         3. **Direct Response:** Provide only the reformulated question as the output. Do not include any context summary or additional information.
 
         4. **No Redundancy:** If the user's latest question is already clear and self-contained, return it as is without any modifications.
-
-        5. **Example:**
-        - **Chat History:** 
-            - User: "Can you tell me about the new AI technique mentioned?"
-            - PodQuest: "Sure! The podcast mentions a new AI technique called X, which involves [detailed explanation]."
-            - User: "How is it applied in real-world scenarios?"
-        - **Reformulated Question:** "How is the new AI technique called X, mentioned earlier, applied in real-world scenarios?"
-
+        
         By following these guidelines, you will ensure that each user question is clear, self-contained, and contextually relevant, enabling accurate and helpful responses in subsequent steps of the PodQuest system.
+        Below is the true chat history and latest user's query on the podcast:
         """
     contextualize_q_prompt = ChatPromptTemplate.from_messages(
         [
@@ -91,6 +102,8 @@ def __initialise_chain(transcript_file, namespace):
         5. No Context Available:
         - If the context does not contain the information needed to answer a question, let the user know that the specific detail is not available in the current podcast.
         - Offer to help with another question.
+        
+        6. While giving out summary of the podcast(if and when user asks), try understanding the meaning and intent of the podcast on a brodaer level and provide a summary that captures the essence of the podcast.
         
         By following these guidelines, you will ensure users have a helpful and engaging experience while interacting with you. Always aim to provide the most accurate and contextually relevant information available. Good luck, PodQuest!
         Here is the context retrieved from the podcast:

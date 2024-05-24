@@ -19,6 +19,7 @@ urlpatterns = [
     path('loading/', views.loading_page, name='loading_page'),
     path('chat_page/<int:podcast_id>/', views.chat_page, name='chat_page'),
     path('process_query/', views.process_query, name='process_query'),
+    path('reset_chat/<int:podcast_id>', views.reset_chat, name='reset_chat'),
     path('data/', include(router.urls)),
     path('FAQs/', views.FAQs, name='FAQs'),
     path('about/', views.about, name='About'),

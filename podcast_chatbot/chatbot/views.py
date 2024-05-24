@@ -10,6 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 import json
 from django.conf import settings
+import time
 
 import logging
 
@@ -40,7 +41,7 @@ def FAQs(request):
     json_file_path = os.path.join(settings.BASE_DIR, 'chatbot/data/faqs.json')
     with open(json_file_path) as f:
         faq = json.load(f)
-    print(faq)
+    # print(faq)
     return render(request, 'FAQs.html', {"faqs": faq})
 
 def about(request):
@@ -81,16 +82,18 @@ llm_chains = {}
 def chat_page(request, podcast_id):
     # session_id = request.session.session_key
     session_id = request.user.username + '_' + str(podcast_id) + '_session'
-    rag_llm_chain = initialise_chain(podcast_id)
-    llm_chains[session_id] = rag_llm_chain
-    logger.error(f"In chat_page initialising chain for podcast_id: {podcast_id} and session_id: {session_id}...")
+    # logger.error(f"In chat_page initialising chain for podcast_id: {podcast_id} and session_id: {session_id}...")
     podcast_title = Podcast.objects.get(id=podcast_id).title
     if Summary.objects.filter(transcript__podcast__id=podcast_id).exists():
         podcast_summary = Summary.objects.get(transcript__podcast__id=podcast_id).summary_content
     else:
+        time.sleep(2)
         summary_prompt = "Please provide a brief summary of the podcast."
+        rag_llm_chain = initialise_chain(podcast_id)
+        llm_chains[session_id] = rag_llm_chain
         podcast_summary = get_llm_response(summary_prompt, rag_llm_chain, session_id)
         Summary.objects.create(transcript=Transcript.objects.get(podcast=Podcast.objects.get(id=podcast_id)), summary_content=podcast_summary)
+        return reset_chat(request, podcast_id)
     greet_message = f"""
         <div style="font-family: Arial, sans-serif; line-height: 1.6;">
             <p><strong>Welcome to PodQuest!</strong></p>
@@ -103,7 +106,9 @@ def chat_page(request, podcast_id):
             <p>Feel free to ask me anything about the podcast!</p>
         </div>
         """
-    return render(request, 'chat_page.html', {'podcast_id': podcast_id, 'greet_message': greet_message})
+    chat_history = get_chat_history(redis_key="message_store:" + session_id)
+    # print(chat_history)
+    return render(request, 'chat_page.html', {'podcast_id': podcast_id, 'greet_message': greet_message, 'chat_history': chat_history})
 
 @csrf_exempt
 @login_required
@@ -130,3 +135,9 @@ def process_query(request):
             logger.error(f'Our session_id: {session_id}')
             return JsonResponse({'error': str(e)}, status=500)
         # return JsonResponse({'error': str(e)}, status=500)
+
+def reset_chat(request, podcast_id):
+    redis_key = f"message_store:{request.user.username}_{podcast_id}_session"
+    redis_client = redis.StrictRedis.from_url(settings.REDIS_URL)
+    redis_client.delete(redis_key)
+    return redirect('chat_page', podcast_id=podcast_id)

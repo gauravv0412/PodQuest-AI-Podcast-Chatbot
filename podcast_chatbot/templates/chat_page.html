@@ -37,7 +37,7 @@
 {% endblock %}
 {% block content %}
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", function () {
         scrollToBottom(); // Ensure the chat box scrolls to the bottom on page load
     });
 
@@ -126,12 +126,23 @@
             <div class="message text-start">
                 {{ greet_message|safe }}
             </div>
+            {% for message in chat_history %}
+            <div class="message text-start">
+                {% if message.type == 'human' %}
+                {{ user.first_name }}: {{ message.data.content }}
+                {% else %}
+                Podquest: <div style="padding: 10px; border-radius: 8px; margin-top: 10px; border: 1px solid #ddd;">
+                    {{ message.data.content|safe }}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
         </div>
         <div class="input-group">
             <input type="text" id="chat-input" class="form-control" placeholder="Ask something..."
                 onkeydown="handleEnter(event)">
             <button class="btn btn-secondary" onclick="sendMessage()" id="send-button">Send</button>
+            <a href="{% url 'reset_chat' podcast_id=podcast_id %}" role=button class="btn btn-danger">Reset Chat</a>
         </div>
     </div>
-</div>
-{% endblock %}
+    {% endblock %}

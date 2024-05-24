@@ -40,9 +40,9 @@ LANGCHAIN_API_KEY = config['api_keys']['LANGCHAIN_API_KEY']
 OPENAI_API_KEY = config['api_keys']['OPENAI_API_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', "podsquest.com", "www.podsquest.com"]
 
 
 # Application definition
