@@ -43,5 +43,5 @@ PodQuest uses Celery for asynchronous task management, ensuring that all backend
 - **Home Page** ![Home Page Screenshot](screenshots/homepage.png) ![FeaturesScreenshot](screenshots/features.png)
 - **SignUp & Login View**: ![SignUp & Login View Screenshot](screenshots/signup.png) ![SignUp & Login View Screenshot](screenshots/login.png)
 - **Chat Loading Page**: ![Chat Loading Screenshot](screenshots/loading.png)
-- **Chat Interface**: ![Chat Interface Screenshot](screenshots/chat.png)
+- **Chat Interface**: ![Chat Interface Screenshot](screenshots/chat.png) ![My_Podcasts Screenshot](screenshots/list_podcasts.png)
 
