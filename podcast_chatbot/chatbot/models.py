@@ -8,6 +8,7 @@ class Podcast(models.Model):
     file_path = models.FileField(upload_to='podcasts/')
     upload_date = models.DateTimeField(auto_now_add=True)
     url = models.URLField()
+    processing_status = models.CharField(max_length=50, default='Pending')
     
     class Meta:
         unique_together = [['owner', 'title']]

@@ -1,0 +1,116 @@
+{% extends 'layouts/base.html' %}
+
+{% block head %}
+<style>
+  body {
+    background-image: url('/media/bg.webp');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-blend-mode: overlay;
+  }
+
+  /* Make the table transparent */
+  .table.table-transparent {
+    background-color: transparent;
+  }
+
+  .table.table-transparent td,
+  .table.table-transparent th {
+    background-color: transparent;
+    border-top: none;
+  }
+
+  /* Style for the summary content */
+  .summary-content {
+    width: 100%;
+    white-space: pre-wrap;
+    /* Preserves whitespace and line breaks */
+    background-color: rgba(6, 51, 83, 0.8);
+    /* White with 50% opacity */
+    border: 1px solid #ced4da;
+    /* Border to match textarea style */
+    padding: 0.375rem 0.75rem;
+    /* Padding to match textarea style */
+    border-radius: 0.25rem;
+    /* Border radius to match textarea style */
+    box-sizing: border-box;
+    /* Ensure padding is included in width calculation */
+    overflow: visible;
+    /* Prevent scrolling */
+  }
+
+  .summary-content p {
+    margin: 0;
+    /* Remove default margins */
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="b-example-divider">
+  <h1 class="display-6 text-left my-4">My Podcasts</h1>
+  <hr>
+  {% if items|length == 0 %}
+  <div class="alert alert-light" role="alert">
+    {{ message }}
+  </div>
+  {% else %}
+  <table class="table table-transparent">
+    <thead>
+      <tr>
+        <th scope="col">Upload Date</th>
+        <th scope="col">Title</th>
+        <th scope="col">Summary</th>
+        <th scope="col">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td>
+          {{ item.upload_date }}
+        </td>
+        <td>
+          {{ item.title }}
+        </td>
+        <td>
+          <div class="summary-content">{{ item.summary|safe }}</div>
+        </td>
+        <td class="text-right">
+          <div class="d-flex justify-content-end">
+            <a href="{% url 'chat_page' item.id %}" class="btn btn-outline-success action-btn"
+              style="margin-right: 8px;" onclick="disableButtons()">Open</a>
+            <a href="{% url 'delete_podcast' item.id %}" class="btn btn-outline-danger action-btn"
+              onclick="disableButtons()">Delete</a>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+<script>
+  function disableButtons() {
+    const buttons = document.querySelectorAll('.action-btn');
+    buttons.forEach(button => {
+      button.classList.add('disabled');
+      button.setAttribute('aria-disabled', 'true');
+    });
+  }
+  function enableButtons() {
+    const buttons = document.querySelectorAll('.action-btn');
+    buttons.forEach(button => {
+      button.classList.remove('disabled');
+      button.removeAttribute('aria-disabled');
+    });
+  }
+
+  // Re-enable buttons when the page is shown (handles browser back navigation)
+  window.addEventListener('pageshow', function () {
+    enableButtons();
+  });
+</script>
+{% endblock %}

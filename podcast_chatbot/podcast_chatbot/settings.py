@@ -40,9 +40,9 @@ LANGCHAIN_API_KEY = config['api_keys']['LANGCHAIN_API_KEY']
 OPENAI_API_KEY = config['api_keys']['OPENAI_API_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', "podsquest.com", "www.podsquest.com"]
 
 
 # Application definition
@@ -53,10 +53,13 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'daphne',
     'django.contrib.staticfiles',
+    'channels',
     'my_auth',
     'chatbot',
     'widget_tweaks',
+
 ]
 
 MIDDLEWARE = [
@@ -97,8 +100,12 @@ WSGI_APPLICATION = 'podcast_chatbot.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config['database']['name'],
+        'USER': config['database']['user'],
+        'PASSWORD': config['database']['password'],
+        'HOST': config['database']['host'],
+        'PORT': config['database']['port'],
     }
 }
 
@@ -146,6 +153,9 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
@@ -154,3 +164,63 @@ LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = '/auth/login/'
 
 
+ASGI_APPLICATION = 'podcast_chatbot.asgi.application'
+# settings.py
+
+# settings.py
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('localhost', 6379)],
+        },
+    },
+}
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+
+REDIS_URL = "redis://localhost:6379/0"
+
+
+
+# settings.py
+
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'console': {
+#             'class': 'logging.StreamHandler',
+#         },
+#     },
+#     'loggers': {
+#         'django': {
+#             'handlers': ['console'],
+#             'level': 'DEBUG',  # Set this to DEBUG to capture detailed logs
+#             'propagate': True,
+#         },
+#         'channels': {
+#             'handlers': ['console'],
+#             'level': 'DEBUG',  # Set this to DEBUG to capture detailed logs
+#             'propagate': True,
+#         },
+#         'chatbot': {  # Use your app's name here
+#             'handlers': ['console'],
+#             'level': 'DEBUG',  # Set this to DEBUG to capture detailed logs
+#             'propagate': True,
+#         },
+#     },
+# }
+
+
+# settings.py
+
+# Security settings
+SECURE_SSL_REDIRECT = False  # Set to True when using HTTPS
+SESSION_COOKIE_SECURE = False  # Set to True when using HTTPS
+CSRF_COOKIE_SECURE = False  # Set to True when using HTTPS
+X_FRAME_OPTIONS = 'DENY'
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True

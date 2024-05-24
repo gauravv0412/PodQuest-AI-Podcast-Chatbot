@@ -22,6 +22,13 @@
       <div class="col-lg-6">
         <form method="post" class="form">
           {% csrf_token %}
+          {% if form.non_field_errors %}
+          <div class="alert alert-danger">
+            {% for error in form.non_field_errors %}
+            <p>{{ error }}</p>
+            {% endfor %}
+          </div>
+          {% endif %}
           {% for field in form %}
           <div class="mb-3">
             <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
