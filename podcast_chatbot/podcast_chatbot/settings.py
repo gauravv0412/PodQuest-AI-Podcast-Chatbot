@@ -38,6 +38,7 @@ SECRET_KEY = config['api_keys']['SECRET_KEY']
 PINECONE_API_KEY = config['api_keys']['PINECONE_API_KEY']
 LANGCHAIN_API_KEY = config['api_keys']['LANGCHAIN_API_KEY']
 OPENAI_API_KEY = config['api_keys']['OPENAI_API_KEY']
+YT_API_KEY = config['api_keys']['YT_API_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -218,9 +219,34 @@ REDIS_URL = "redis://localhost:6379/0"
 # settings.py
 
 # Security settings
-SECURE_SSL_REDIRECT = False  # Set to True when using HTTPS
-SESSION_COOKIE_SECURE = False  # Set to True when using HTTPS
-CSRF_COOKIE_SECURE = False  # Set to True when using HTTPS
-X_FRAME_OPTIONS = 'DENY'
+# SECURE_SSL_REDIRECT = False  # Set to True when using HTTPS
+# SESSION_COOKIE_SECURE = False  # Set to True when using HTTPS
+# CSRF_COOKIE_SECURE = False  # Set to True when using HTTPS
+# X_FRAME_OPTIONS = 'DENY'
+# SECURE_BROWSER_XSS_FILTER = True
+# SECURE_CONTENT_TYPE_NOSNIFF = True
+
+
+# settings.py
+
+# Ensures that Django knows it is behind a proxy and should behave accordingly
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Redirect all HTTP requests to HTTPS
+SECURE_SSL_REDIRECT = True
+
+# Ensures session cookies are only sent over HTTPS
+SESSION_COOKIE_SECURE = True
+
+# Ensures CSRF cookies are only sent over HTTPS
+CSRF_COOKIE_SECURE = True
+
+# HTTP Strict Transport Security
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+# Other security settings you might want to consider
 SECURE_BROWSER_XSS_FILTER = True
+X_FRAME_OPTIONS = 'DENY'
 SECURE_CONTENT_TYPE_NOSNIFF = True
