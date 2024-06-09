@@ -2,6 +2,8 @@
 
 PodQuest is an advanced AI chatbot that transforms podcast listening into an interactive experience. This chatbot leverages cutting-edge AI technologies to transcribe podcasts, understand the content, and engage with users in a conversation about it. You can ask it anything about the podcast—details, explanations, or summaries—and get instant, intelligent responses. It is designed for anyone who wants to quickly grasp complex topics without needing to sift through hours of audio, making learning from podcasts as easy as having a chat.
 
+Visit the live website here - [www.podsquest.com](https://www.podsquest.com)
+
 ## Key Features
 
 - **Dynamic Content Interaction**: Engage with podcasts through an interactive AI-powered chat interface.
