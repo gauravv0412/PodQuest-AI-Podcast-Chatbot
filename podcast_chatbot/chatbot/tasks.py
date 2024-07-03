@@ -119,3 +119,14 @@ def get_chat_history(redis_key):
     messages = redis_client.lrange(redis_key, 0, -1)
     chat_history = [json.loads(message.decode('utf-8')) for message in messages]
     return chat_history
+
+
+from pinecone import Pinecone
+
+def check_data_freshness(namespace):
+    pc = Pinecone(api_key=settings.PINECONE_API_KEY)
+    index = pc.Index('podcasts')
+    while not index.describe_index_stats()['namespaces'].get(namespace, False):
+        print(f'Checking for namespace: {namespace}')
+        continue
+    return

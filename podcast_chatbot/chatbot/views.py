@@ -123,7 +123,9 @@ def chat_page(request, podcast_id):
     if Summary.objects.filter(transcript__podcast__id=podcast_id).exists():
         podcast_summary = Summary.objects.get(transcript__podcast__id=podcast_id).summary_content
     else:
-        time.sleep(2)
+        # Check data freshness...
+        # time.sleep(3)
+        check_data_freshness(request.user.username + '_' + str(podcast_id))
         summary_prompt = "Please provide a brief summary of the podcast."
         rag_llm_chain = initialise_chain(podcast_id)
         llm_chains[session_id] = rag_llm_chain
