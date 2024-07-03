@@ -28,25 +28,29 @@
 </div>
 
 <script>
-    const podcastId = "{{ podcast_id }}";  // Ensure this is rendered correctly
-    const ws = new WebSocket(`ws://${window.location.host}/ws/podcast/${podcastId}/`);
+    document.addEventListener('DOMContentLoaded', (event) => {
+        const podcastId = "{{ podcast_id }}";  // Ensure this is rendered correctly
+        const protocol = (window.location.protocol === 'https:') ? 'wss://' : 'ws://';
+        const wsUrl = protocol + window.location.host + `/ws/podcast/${podcastId}/`;
+        const ws = new WebSocket(wsUrl);
 
-    ws.onmessage = function (event) {
-        console.log('Message received:', event.data);
-        const data = JSON.parse(event.data);
-        document.getElementById('status').textContent = data.message + '...';
-        if (data.message === 'Initialising Langchain... Redirecting') {
-            window.location.href = `/chat_page/${podcastId}`;
-        }
-    };
+        ws.onmessage = function (event) {
+            console.log('Message received:', event.data);
+            const data = JSON.parse(event.data);
+            document.getElementById('status').textContent = data.message + '...';
+            if (data.message === 'Initialising Langchain... Redirecting') {
+                window.location.href = `/chat_page/${podcastId}`;
+            }
+        };
 
-    ws.onopen = function () {
-        console.log('WebSocket connection established');
-    };
+        ws.onopen = function () {
+            console.log('WebSocket connection established');
+        };
 
-    ws.onerror = function (error) {
-        console.error('WebSocket Error:', error);
-    };
+        ws.onerror = function (error) {
+            console.error('WebSocket Error:', error);
+        };
+    });
 </script>
 
 {% endblock %}

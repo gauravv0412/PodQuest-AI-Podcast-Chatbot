@@ -27,7 +27,7 @@
 
 <div class="row justify-content-center mb-4">
     <div class="col-md-6">
-        <form action="{% url 'submit_podcast' %}" method="post" class="card card-body">
+        <form action="{% url 'submit_podcast' %}" method="post" class="card card-body" id="podcastForm">
             {% csrf_token %}
             <div class="mb-3">
                 <label for="podcast_title" class="form-label">Podcast Name</label>
@@ -100,5 +100,14 @@
         </div>
     </div>
 </div>
-
+<script>
+    document.getElementById('podcastForm').addEventListener('submit', function (event) {
+        var url = document.getElementById('podcast_url').value;
+        var pattern = /^(https?\:\/\/)?(www\.youtube\.com|youtu\.?be)\/.+$/;
+        if (!pattern.test(url)) {
+            event.preventDefault();
+            alert('Please enter a valid YouTube URL.');
+        }
+    });
+</script>
 {% endblock %}

@@ -11,6 +11,8 @@ from django.contrib import messages
 import json
 from django.conf import settings
 import time
+import re
+import requests
 
 import logging
 
@@ -58,7 +60,37 @@ def loading_page(request):
     # return render(request, 'loading.html', {'podcast_id': podcast_id})
     return render(request, 'loading.html', {'task_id': task_id, 'podcast_id': podcast_id})
 
+def clean_podcast_url(url):
+    msg = "Success"
+    pattern = re.compile(r'^(https?\:\/\/)?(www\.youtube\.com|youtu\.?be)\/.+$')
+    if not pattern.match(url):
+        msg = 'Please enter a valid YouTube URL.'
 
+    # Extract the video ID from the URL
+    video_id = extract_video_id(url)
+    if not video_id:
+        msg = 'Please enter a valid YouTube URL.'
+
+
+    # Check if the video exists using YouTube Data API
+    if not video_exists(video_id):
+        msg = 'The video does not exist. Please enter a valid YouTube URL.'
+
+    return msg
+
+def extract_video_id(url):
+    # Extract the video ID from the URL
+    pattern = re.compile(r'(?:v=|\/)([0-9A-Za-z_-]{11}).*')
+    match = pattern.search(url)
+    return match.group(1) if match else None
+
+def video_exists(video_id):
+    # Replace 'YOUR_API_KEY' with your actual YouTube Data API key
+    api_key = settings.YT_API_KEY
+    url = f'https://www.googleapis.com/youtube/v3/videos?id={video_id}&key={api_key}&part=id'
+    response = requests.get(url)
+    data = response.json()
+    return data['pageInfo']['totalResults'] == 1
 
 @login_required
 def submit_podcast(request):
@@ -67,6 +99,10 @@ def submit_podcast(request):
         url = request.POST['podcast_url']
         if Podcast.objects.filter(owner=request.user, title=title).exists():
             messages.error(request, 'You already have a podcast with this name. Please choose a different name.')
+            return render(request, 'index.html')
+        msg = clean_podcast_url(url)
+        if msg != "Success":
+            messages.error(request, msg)
             return render(request, 'index.html')
         podcast = Podcast.objects.create(owner=request.user, title=title, url=url)
 
@@ -87,7 +123,9 @@ def chat_page(request, podcast_id):
     if Summary.objects.filter(transcript__podcast__id=podcast_id).exists():
         podcast_summary = Summary.objects.get(transcript__podcast__id=podcast_id).summary_content
     else:
-        time.sleep(2)
+        # Check data freshness...
+        # time.sleep(3)
+        check_data_freshness(request.user.username + '_' + str(podcast_id))
         summary_prompt = "Please provide a brief summary of the podcast."
         rag_llm_chain = initialise_chain(podcast_id)
         llm_chains[session_id] = rag_llm_chain
